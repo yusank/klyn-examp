@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
     name: goapp-deploy
-    namespace: kube-apps
+    namespace: kube-system
     labels:
       k8s-app: klyn-examp
 spec:
@@ -50,7 +50,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: goapp-svc
-  namespace: kube-apps
+  namespace: kube-system
   labels:
     k8s-app: klyn-examp
 spec:
@@ -67,7 +67,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: goapp-ingress
-  namespace: kube-apps
+  namespace: kube-system
 spec:
   rules:
   - host: klyn.yusank-k8s.cn
