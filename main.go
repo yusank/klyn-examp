@@ -10,5 +10,5 @@ func main() {
 	group := core.Group("/klyn")
 	router(group)
 
-	core.Service()
+	core.Service(":8081")
 }

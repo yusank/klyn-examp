@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: goapp-deploy
+    namespace: kube-apps
+    labels:
+      k8s-app: klyn-examp
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: klyn-examp
+    spec:
+      containers:
+      - image: yusank/klyn-examp:0.0.1
+        imagePullPolicy: Always
+        name: klyn-examp
+        ports:
+        - containerPort: 8081
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 10
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8081
+          initialDelaySeconds: 10
+          timeoutSeconds: 2
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goapp-svc
+  namespace: kube-apps
+  labels:
+    k8s-app: klyn-examp
+spec:
+  ports:
+    - name: api
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    k8s-app: klyn-examp
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: goapp-ingress
+  namespace: kube-apps
+spec:
+  rules:
+  - host: klyn.yusank-k8s.cn
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: goapp-svc
+          servicePort: api

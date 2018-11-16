@@ -1,8 +1,8 @@
 APP?=klyn-examp
-RELEASE?=0.0.1
+RELEASE?=0.0.2
 GOOS?=linux
 GOARCH?=amd64
-PORT?=8080
+PORT?=8081
 CONTAINER_IMAGE?=docker.io/yusank/${APP}
 
 clean:

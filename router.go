@@ -12,6 +12,7 @@ func router(r *klyn.RouterGroup) {
 	r.GET("/test", setIntHandler, getIntHandler)
 	r.GET("/healthz", healthHandler)
 	r.GET("/readyz", readyHandler)
+	r.GET("/ping", ping)
 }
 
 func testHandler(c *klyn.Context) {
@@ -40,4 +41,8 @@ func healthHandler(c *klyn.Context) {
 
 func readyHandler(c *klyn.Context) {
 	c.JSON(http.StatusOK, nil)
+}
+
+func ping(c *klyn.Context) {
+	c.JSON(http.StatusOK, "pong")
 }
