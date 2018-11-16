@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"git.yusank.space/yusank/klyn"
 )
@@ -9,6 +10,8 @@ import (
 func router(r *klyn.RouterGroup) {
 	r.GET("", testHandler, test2Handler)
 	r.GET("/test", setIntHandler, getIntHandler)
+	r.GET("/healthz", healthHandler)
+	r.GET("/readyz", readyHandler)
 }
 
 func testHandler(c *klyn.Context) {
@@ -29,4 +32,12 @@ func setIntHandler(c *klyn.Context) {
 func getIntHandler(c *klyn.Context) {
 	i := c.GetInt("int")
 	c.JSON(200, i)
+}
+
+func healthHandler(c *klyn.Context) {
+	c.JSON(http.StatusOK, nil)
+}
+
+func readyHandler(c *klyn.Context) {
+	c.JSON(http.StatusOK, nil)
 }
