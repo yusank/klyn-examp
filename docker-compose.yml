@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  klyn-examp:
+    image: klyn-examp
+    build: .
+    ports:
+      - 8080:8080
