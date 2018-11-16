@@ -66,8 +66,15 @@ func (c *Context) IsAbort() bool {
 	return c.index < abortIndex
 }
 
+// Abort - abort chain
 func (c *Context) Abort() {
 	c.index = abortIndex
+}
+
+// AbortWithJSON - abort chain and response with json
+func (c *Context) AbortWithJSON(v interface{}) {
+	c.index = abortIndex
+	c.JSON(http.StatusOK, v)
 }
 
 // JSON - write response as json type
@@ -92,7 +99,7 @@ func (c *Context) AbortWithStatus(code int) {
 	return
 }
 
-func (c *Context) AbortWithJSON(code int, v interface{}) {
+func (c *Context) AbortWithJSONCode(code int, v interface{}) {
 	c.Abort()
 	c.JSON(code, v)
 }
@@ -119,5 +126,57 @@ func (c *Context) Set(key string, value interface{}) {
 // Get - get value from Context.cachePool
 func (c *Context) Get(key string) (value interface{}, exist bool) {
 	value, exist = c.cachePool[key]
+	return
+}
+func (c *Context) GetString(key string) (str string) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		str = val.(string)
+	}
+	return
+}
+
+func (c *Context) GetInt(key string) (i int) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		i = val.(int)
+	}
+
+	return
+}
+
+func (c *Context) GetInt64(key string) (i64 int64) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		i64 = val.(int64)
+	}
+
+	return
+}
+
+func (c *Context) GetFloat32(key string) (f32 float32) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		f32 = val.(float32)
+	}
+
+	return
+}
+
+func (c *Context) GetFloat64(key string) (f64 float64) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		f64 = val.(float64)
+	}
+
+	return
+}
+
+func (c *Context) GetBool(key string) (b bool) {
+	val, exist := c.cachePool[key]
+	if exist && val != nil {
+		b = val.(bool)
+	}
+
 	return
 }
