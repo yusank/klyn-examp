@@ -20,7 +20,7 @@ spec:
         k8s-app: klyn-examp
     spec:
       containers:
-      - image: yusank/klyn-examp:0.0.1
+      - image: yusank/klyn-examp:0.0.2
         imagePullPolicy: Always
         name: klyn-examp
         ports:
