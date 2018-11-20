@@ -20,7 +20,7 @@ spec:
         k8s-app: klyn-examp
     spec:
       containers:
-      - image: yusank/klyn-examp:0.0.2
+      - image: yusank/klyn-examp:0.0.3
         imagePullPolicy: Always
         name: klyn-examp
         ports:
@@ -55,7 +55,7 @@ metadata:
     k8s-app: klyn-examp
 spec:
   ports:
-    - name: api
+    - name: klyn-api
       port: 8081
       protocol: TCP
       targetPort: 8081
@@ -73,7 +73,7 @@ spec:
   - host: klyn.yusank-k8s.cn
     http:
       paths:
-      - path: /
+      - path: /klyn
         backend:
           serviceName: goapp-svc
-          servicePort: api
+          servicePort: klyn-api

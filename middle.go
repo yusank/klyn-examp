@@ -1,17 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"log"
+
 	"git.yusank.space/yusank/klyn"
 )
 
 func middleBefore(c *klyn.Context) {
-	fmt.Println("before handler")
+	log.Println("before handler")
 	c.Next()
 }
 
 func middleAfter(c *klyn.Context) {
 	c.Next()
 
-	fmt.Println("after handler")
+	log.Println("after handler")
 }

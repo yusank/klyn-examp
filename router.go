@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"git.yusank.space/yusank/klyn"
@@ -21,13 +21,13 @@ func testHandler(c *klyn.Context) {
 }
 
 func test2Handler(c *klyn.Context) {
-	fmt.Println("nice")
-	fmt.Println(c.Get("abc"))
+	log.Println("nice")
+	log.Println(c.Get("abc"))
 }
 
 func setIntHandler(c *klyn.Context) {
 	c.Set("int", 200)
-	fmt.Println("in handler")
+	log.Println("in handler")
 }
 
 func getIntHandler(c *klyn.Context) {
