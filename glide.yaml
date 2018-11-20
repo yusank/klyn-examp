@@ -2,5 +2,5 @@ package: git.yusank.space/yusank/klyn-examp
 import:
 - package: git.yusank.space/yusank/klyn
   repo: http://git.yusank.space/yusank/klyn.git
-  version: v0.0.2
+  version: master
   vcs: git

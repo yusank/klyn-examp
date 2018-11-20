@@ -21,6 +21,7 @@ const (
 
 type HandlerFunc func(*Context)
 type HandlersChain []HandlerFunc
+type K map[string]interface{}
 
 // Last returns the last handler in the chain. ie. the last handler is the main own.
 func (c HandlersChain) Last() HandlerFunc {
@@ -46,6 +47,8 @@ type Core struct {
 	UnescapePathValues     bool
 	HandleMethodNotAllowed bool
 
+	ForwardByClientIP bool
+
 	trees methodTrees
 	pool  sync.Pool
 }
@@ -53,6 +56,7 @@ type Core struct {
 var _ KRouter = &Core{}
 var (
 	default405Body = []byte("405 method not allowed")
+	default404Body = []byte("404 page not found")
 )
 
 func New() *Core {
@@ -63,6 +67,7 @@ func New() *Core {
 			root:     true,
 		},
 
+		HandleMethodNotAllowed: true,
 		trees: make(methodTrees, 0, 9),
 	}
 	core.pool.New = func() interface{} {
@@ -76,6 +81,7 @@ func New() *Core {
 
 func Default() *Core {
 	core := New()
+	core.UseMiddleware(Logger())
 	return core
 }
 
@@ -186,9 +192,20 @@ func (core *Core) handleHTTPRequest(c *Context) {
 	}
 
 	if core.HandleMethodNotAllowed {
-		serverError(c, 405, default405Body)
+		for _, tree := range core.trees {
+			if tree.method == method {
+				continue
+			}
+
+			handlers, _, _ := tree.root.getValue(path, c.Params, unescape)
+			if handlers != nil {
+				serverError(c, http.StatusMethodNotAllowed, default405Body)
+				return
+			}
+		}
 	}
 
+	serverError(c, http.StatusNotFound, default404Body)
 	return
 }
 

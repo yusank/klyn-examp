@@ -9,6 +9,7 @@ import (
 
 func router(r *klyn.RouterGroup) {
 	r.GET("", testHandler, test2Handler)
+	r.POST("", test2Handler)
 	r.GET("/test", setIntHandler, getIntHandler)
 	r.GET("/healthz", healthHandler)
 	r.GET("/readyz", readyHandler)
