@@ -32,7 +32,7 @@ func setIntHandler(c *klyn.Context) {
 
 func getIntHandler(c *klyn.Context) {
 	i := c.GetInt("int")
-	c.JSON(200, i)
+	c.JSON(200, map[string]interface{}{"errCode": 0, "errMsg": i})
 }
 
 func healthHandler(c *klyn.Context) {
