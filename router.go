@@ -11,9 +11,7 @@ func router(r *klyn.RouterGroup) {
 	r.GET("", testHandler, test2Handler)
 	r.POST("", test2Handler)
 	r.GET("/test", setIntHandler, getIntHandler)
-	r.GET("/healthz", healthHandler)
-	r.GET("/readyz", readyHandler)
-	r.GET("/ping", ping)
+
 }
 
 func testHandler(c *klyn.Context) {
@@ -34,6 +32,12 @@ func setIntHandler(c *klyn.Context) {
 func getIntHandler(c *klyn.Context) {
 	i := c.GetInt("int")
 	c.JSON(200, klyn.K{"errCode": 0, "errMsg": i})
+}
+
+func healthCheck(r *klyn.RouterGroup) {
+	r.GET("/healthz", healthHandler)
+	r.GET("/readyz", readyHandler)
+	r.GET("/ping", ping)
 }
 
 func healthHandler(c *klyn.Context) {

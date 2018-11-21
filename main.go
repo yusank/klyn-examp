@@ -10,6 +10,9 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 	core := klyn.Default()
 	core.UseMiddleware(middleBefore, middleAfter)
+	root := core.Group("")
+	healthCheck(root)
+
 	group := core.Group("/klyn")
 	router(group)
 
