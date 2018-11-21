@@ -1,8 +1,8 @@
 hash: d861935d0ab005ff73c48ddf5c8bceb6659c2b07010ce7c4cbd436e029cb5249
-updated: 2018-11-20T20:59:35.620368+08:00
+updated: 2018-11-21T18:49:27.594238+08:00
 imports:
 - name: git.yusank.space/yusank/klyn
-  version: b4d814d5cf282c97e76a4fc05ebfa5df2df0ea6d
+  version: 0d97b575d9c7ca40dec9a5169827d73094cdd84b
   repo: http://git.yusank.space/yusank/klyn.git
   vcs: git
 testImports: []
