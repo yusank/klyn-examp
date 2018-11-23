@@ -20,12 +20,15 @@ spec:
         k8s-app: klyn-examp
     spec:
       containers:
-      - image: yusank/klyn-examp:0.0.3
+      - image: yusank/klyn-examp:0.0.5
         imagePullPolicy: Always
         name: klyn-examp
         ports:
         - containerPort: 8081
           protocol: TCP
+        volumeMounts:
+        - name: log-storage
+          mountPath: /data/klyn-examp  
         resources:
           limits:
             cpu: 100m
@@ -44,6 +47,9 @@ spec:
             port: 8081
           initialDelaySeconds: 10
           timeoutSeconds: 2
+      volumes:
+      - name: log-storage
+        emptyDir: {}    
 
 ---
 apiVersion: v1
