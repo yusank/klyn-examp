@@ -1,12 +1,12 @@
 hash: d8950cf5a87895f5e7c7a1e90e8306a1a588618692d7e430344202f25a7e0a6f
-updated: 2018-11-23T13:37:43.621517+08:00
+updated: 2018-11-23T14:35:55.453897+08:00
 imports:
 - name: git.yusank.space/yusank/klyn
   version: 0d97b575d9c7ca40dec9a5169827d73094cdd84b
   repo: http://git.yusank.space/yusank/klyn.git
   vcs: git
 - name: git.yusank.space/yusank/klyn-log
-  version: 5e5ad88fd383dfaa9095d9568cf8b556a0a9a2b9
+  version: 02cce4d1ef0f649dfc3d160e6a3c32867e760351
   repo: http://git.yusank.space/yusank/klyn-log.git
   vcs: git
   subpackages:
