@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"git.yusank.space/yusank/klyn"
 )
@@ -11,6 +12,10 @@ func router(r *klyn.RouterGroup) {
 	r.GET("", testHandler, test2Handler)
 	r.POST("", test2Handler)
 	r.GET("/test", setIntHandler, getIntHandler)
+
+	r.GET("/healthz", healthHandler)
+	r.GET("/readyz", readyHandler)
+	r.GET("/ping", ping)
 
 }
 
@@ -49,5 +54,11 @@ func readyHandler(c *klyn.Context) {
 }
 
 func ping(c *klyn.Context) {
+	Logger.Info(map[string]interface{}{
+		"event":    "ping check",
+		"time":     time.Now().Unix(),
+		"clientIP": c.ClientIP(),
+	})
+
 	c.JSON(http.StatusOK, "pong")
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"log"
-
 	"git.yusank.space/yusank/klyn"
+	"git.yusank.space/yusank/klyn-log"
 )
 
+var Logger klynlog.Logger
+
 func main() {
-	log.SetFlags(log.Lshortfile)
 	core := klyn.Default()
 	core.UseMiddleware(middleBefore, middleAfter)
 	root := core.Group("")
@@ -16,5 +16,9 @@ func main() {
 	group := core.Group("/klyn")
 	router(group)
 
+	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
+		Prefix:  "klyn-examp",
+		IsDebug: true,
+	})
 	core.Service(":8081")
 }

@@ -1,3 +1,4 @@
 go.mod
 .idea
 klyn-examp
+*.log

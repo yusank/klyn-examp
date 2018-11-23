@@ -1,5 +1,5 @@
 APP?=klyn-examp
-RELEASE?=latest
+RELEASE?=0.0.4
 GOOS?=linux
 GOARCH?=amd64
 PORT?=8081

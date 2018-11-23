@@ -4,3 +4,7 @@ import:
   repo: http://git.yusank.space/yusank/klyn.git
   version: master
   vcs: git
+- package: git.yusank.space/yusank/klyn-log
+  repo: http://git.yusank.space/yusank/klyn-log.git
+  version: master
+  vcs: git  
