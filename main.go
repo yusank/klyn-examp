@@ -5,6 +5,7 @@ import (
 	"git.yusank.space/yusank/klyn-log"
 )
 
+// Logger - global logger
 var Logger klynlog.Logger
 
 func main() {
