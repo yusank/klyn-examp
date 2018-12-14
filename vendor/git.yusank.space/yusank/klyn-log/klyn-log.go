@@ -1,3 +1,7 @@
+// Copyright 2018 Yusan Kurban. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package klynlog
 
 import (
@@ -13,31 +17,13 @@ import (
 	"git.yusank.space/yusank/klyn-log/utils"
 )
 
-// Logger provide leveled log
-type Logger interface {
-	Trace(j interface{})
-	Debug(j interface{})
-	Info(j interface{})
-	Warn(j interface{})
-	Error(j interface{})
-	Fatal(j interface{})
-	Any(level int, j interface{})
-	OFF()
-}
-
 const (
-	// LoggerLevelTrace - log trace level
-	LoggerLevelTrace = iota + 1
-	// LoggerLevelDebug - log debug level
-	LoggerLevelDebug
-	// LoggerLevelInfo - log info level
-	LoggerLevelInfo
-	// LoggerLevelWarn - log warn level
-	LoggerLevelWarn
-	// LoggerLevelError - log error level
-	LoggerLevelError
-	// LoggerLevelFatal - log fatal level
-	LoggerLevelFatal
+	// FlushModeEveryLog -  flush cache to disk each log
+	FlushModeEveryLog = iota
+	// FlushModeByDuration - flush cache to disk with every duration
+	FlushModeByDuration
+	// FlushModeBySize - flush cache to disk only when cache larger then size setted
+	FlushModeBySize
 )
 
 // KlynLog - implement Logger and provide cache
@@ -49,14 +35,17 @@ type KlynLog struct {
 
 // LoggerConfig - logger config
 type LoggerConfig struct {
-	isOff   bool
-	IsDebug bool
-	Prefix  string
+	isOff bool
+
+	FlushMode int // flush dick mode
+	IsDebug   bool
+	Prefix    string
 }
 
 type logCache struct {
 	buf       *bytes.Buffer
 	ticker    *time.Ticker
+	forceSync chan bool
 	errChan   chan error
 	cacheLock *sync.RWMutex
 }
@@ -75,6 +64,7 @@ func NewLogger(l *LoggerConfig) Logger {
 		buf:       new(bytes.Buffer),
 		cacheLock: new(sync.RWMutex),
 		ticker:    time.NewTicker(consts.DefaultTickerDuration),
+		forceSync: make(chan bool, 1),
 		errChan:   make(chan error, 0),
 	}
 	logger := &KlynLog{
@@ -94,7 +84,8 @@ func NewLogger(l *LoggerConfig) Logger {
 // DefaultLogger - get default logger
 func DefaultLogger() Logger {
 	conf := &LoggerConfig{
-		Prefix: "KLYN",
+		Prefix:    "KLYN",
+		FlushMode: FlushModeByDuration,
 	}
 
 	return NewLogger(conf)
@@ -103,6 +94,11 @@ func DefaultLogger() Logger {
 // isOff - is log off
 func (kl *KlynLog) isOff() bool {
 	return kl.config.isOff
+}
+
+// isFlushEveryLog -  is flush mode is FlushModeEveryLog
+func (kl *KlynLog) isFlushEveryLog() bool {
+	return kl.config.FlushMode == FlushModeEveryLog
 }
 
 // set log off
@@ -124,6 +120,7 @@ func (kl *KlynLog) syncAndFlushCache() error {
 	kl.cache.cacheLock.Lock()
 	defer kl.cache.cacheLock.Unlock()
 
+	// already locked so no need to call `cacheLen()`
 	if kl.cache.buf.Len() == 0 {
 		return nil
 	}
@@ -166,12 +163,10 @@ func (kl *KlynLog) getIOWriter() (err error) {
 		return
 	}
 
-	lw := &logWriter{
-		writerLock: new(sync.RWMutex),
-	}
-
 	if kl.logWriter == nil {
-		kl.logWriter = lw
+		kl.logWriter = &logWriter{
+			writerLock: new(sync.RWMutex),
+		}
 	}
 
 	kl.logWriter.writer = file
@@ -193,11 +188,12 @@ func (kl *KlynLog) writeAndCloseWithLock(b []byte) (err error) {
 }
 
 // cacheLen - get cache current length of used
-func (kl *KlynLog) cacheLen() int {
+func (kl *KlynLog) cacheLen() (n int) {
 	kl.cache.cacheLock.RLock()
 	defer kl.cache.cacheLock.RUnlock()
 
-	return kl.cache.buf.Len()
+	n = kl.cache.buf.Len()
+	return
 }
 
 // Trace - trace level log
@@ -210,27 +206,28 @@ func (kl *KlynLog) Debug(j interface{}) {
 	kl.log(LoggerLevelDebug, j)
 }
 
-// Info -
+// Info - info level log
 func (kl *KlynLog) Info(j interface{}) {
 	kl.log(LoggerLevelInfo, j)
 }
 
-// Warn -
+// Warn - warn level info
 func (kl *KlynLog) Warn(j interface{}) {
 	kl.log(LoggerLevelWarn, j)
 }
 
-// Error -
+// Error - error level info
 func (kl *KlynLog) Error(j interface{}) {
 	kl.log(LoggerLevelError, j)
 }
 
-// Fatal -
+// Fatal - fatal level info
 func (kl *KlynLog) Fatal(j interface{}) {
 	kl.log(LoggerLevelFatal, j)
 }
 
-// Any -
+// Any - custom level log
+// level should be valid
 func (kl *KlynLog) Any(level int, j interface{}) {
 	kl.log(level, j)
 }
@@ -254,26 +251,57 @@ func (kl *KlynLog) log(level int, j interface{}) {
 
 	kl.writeCache([]byte(line))
 
+	if kl.isFlushEveryLog() {
+		kl.syncAndFlushCache()
+	}
+
 	return
 }
 
-// monitor
+// monitor - monitoring forceSync chan, flush cache once channel receive value
 func (kl *KlynLog) monitor() {
-	for {
-		if kl.cacheLen() >= consts.MaxSizeOfCache {
-			if err := kl.syncAndFlushCache(); err != nil {
-				panic(err)
-			}
-		}
+	// only monitor forceSync chan when need monitoring
+	switch kl.config.FlushMode {
+	case FlushModeBySize:
+		go kl.sizeMonitor()
+	case FlushModeByDuration:
+		go kl.durationMonitor()
+	// other mode no need to monitoring forceSync chan
+	default:
+		return
+	}
 
+	for {
 		select {
-		case <-kl.cache.ticker.C:
+		case <-kl.cache.forceSync:
 			if err := kl.syncAndFlushCache(); err != nil {
 				panic(err)
 			}
 		case e := <-kl.cache.errChan:
 			fmt.Println("err:", e)
 			return
+		}
+	}
+}
+
+// sizeMonitor - check cache size every 10 millisecond.
+// Send a value to forceSync channel when cache size large then MaxSizeOfCache
+func (kl *KlynLog) sizeMonitor() {
+	for {
+		if kl.cacheLen() >= consts.MaxSizeOfCache {
+			kl.cache.forceSync <- true
+		} else {
+			time.Sleep(time.Millisecond * 10)
+		}
+	}
+}
+
+// durationMonitor - send value to forceSync when every tick
+func (kl *KlynLog) durationMonitor() {
+	for {
+		select {
+		case <-kl.cache.ticker.C:
+			kl.cache.forceSync <- true
 		}
 	}
 }

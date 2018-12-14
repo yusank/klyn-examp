@@ -18,8 +18,9 @@ func main() {
 	router(group)
 
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
-		Prefix:  "klyn-examp",
-		IsDebug: true,
+		Prefix:    "klyn-examp",
+		IsDebug:   true,
+		FlushMode: klynlog.FlushModeEveryLog,
 	})
 	core.Service(":8081")
 }
