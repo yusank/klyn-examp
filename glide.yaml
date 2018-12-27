@@ -8,3 +8,5 @@ import:
   repo: http://git.yusank.space/yusank/klyn-log.git
   version: master
   vcs: git  
+- package: go.etcd.io/etcd/client
+  version: master

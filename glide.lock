@@ -1,5 +1,5 @@
-hash: d8950cf5a87895f5e7c7a1e90e8306a1a588618692d7e430344202f25a7e0a6f
-updated: 2018-12-14T15:38:07.155569+08:00
+hash: 978af214ab7f08dffb49f77dc6ef6390305668885da00b9166202bbefbf71b80
+updated: 2018-12-27T19:58:04.143394+08:00
 imports:
 - name: git.yusank.space/yusank/klyn
   version: 0d97b575d9c7ca40dec9a5169827d73094cdd84b
@@ -12,4 +12,54 @@ imports:
   subpackages:
   - consts
   - utils
+- name: github.com/beorn7/perks
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
+  subpackages:
+  - quantile
+- name: github.com/coreos/go-semver
+  version: e214231b295a8ea9479f11b70b35d5acf3556d9b
+  subpackages:
+  - semver
+- name: github.com/golang/protobuf
+  version: 1d3f30b51784bec5aad268e59fd3c2fc1c2fe73f
+  subpackages:
+  - proto
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
+  subpackages:
+  - pbutil
+- name: github.com/prometheus/client_golang
+  version: 3ba18b2033700609303ccae90aebc49a8b460ca6
+  subpackages:
+  - prometheus
+  - prometheus/internal
+  - prometheus/promhttp
+- name: github.com/prometheus/client_model
+  version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: 67670fe90761d7ff18ec1d640135e53b9198328f
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: 1dc9a6cbc91aacc3e8b2d63db4d2e957a5394ac4
+  subpackages:
+  - internal/util
+  - nfs
+  - xfs
+- name: github.com/ugorji/go
+  version: 772ced7fd4c2f6322c07537a9a93b68d74551fa6
+  subpackages:
+  - codec
+- name: go.etcd.io/etcd
+  version: 6937b772326fd27af77072405af88b2356407431
+  subpackages:
+  - client
+  - pkg/pathutil
+  - pkg/srv
+  - pkg/types
+  - version
 testImports: []
