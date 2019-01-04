@@ -2,29 +2,28 @@ package main
 
 import (
 	"log"
-	"net/http"
-
-	"git.yusank.space/yusank/klyn-examp/etcd"
 
 	"git.yusank.space/yusank/klyn"
 	"git.yusank.space/yusank/klyn-log"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Logger - global logger
 var Logger klynlog.Logger
 
 func main() {
-	go func() {
-		log.Println("start")
-		http.Handle("/metrics", promhttp.Handler())
-		log.Println(http.ListenAndServe(":8080", nil))
-	}()
+	log.SetFlags(log.LstdFlags)
+	// etcdMain()
 
-	etcd.Init([]string{"http://127.0.0.1:2379"})
-	etcd.RegisterClient(1, "127.0.0.1", []string{"http://127.0.0.1:2379"})
-	etcd.RegisterClient(2, "127.0.0.1", []string{"http://127.0.0.1:22379"})
-	etcd.RegisterClient(3, "127.0.0.1", []string{"http://127.0.0.1:32379"})
+	// go func() {
+	// 	log.Println("start")
+	// 	http.Handle("/metrics", promhttp.Handler())
+	// 	log.Println(http.ListenAndServe(":8080", nil))
+	// }()
+
+	// etcd.Init([]string{"http://127.0.0.1:2379"})
+	// etcd.RegisterClient(1, "127.0.0.1", []string{"http://127.0.0.1:2379"})
+	// etcd.RegisterClient(2, "127.0.0.1", []string{"http://127.0.0.1:22379"})
+	// etcd.RegisterClient(3, "127.0.0.1", []string{"http://127.0.0.1:32379"})
 
 	core := klyn.Default()
 	core.UseMiddleware(middleBefore, middleAfter)
@@ -37,7 +36,79 @@ func main() {
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
 		Prefix:    "klyn-examp",
 		IsDebug:   true,
-		FlushMode: klynlog.FlushModeEveryLog,
+		FlushMode: klynlog.FlushModeBySize,
 	})
 	core.Service(":8081")
 }
+
+// func etcdMaster() {
+// 	m, err := discovery.NewMaster([]string{
+// 		"http://127.0.0.1:2379",
+// 		"http://127.0.0.1:22379",
+// 		"http://127.0.0.1:32379",
+// 	}, "services/")
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	for {
+// 		for k, v := range m.Nodes {
+// 			fmt.Printf("node:%s, ip=%s\n", k, v.Info.IP)
+// 		}
+// 		fmt.Printf("nodes num = %d\n", len(m.Nodes))
+// 		time.Sleep(time.Second * 5)
+// 	}
+// }
+
+// func etcdService() {
+// 	// etcd-v3
+
+// 	ns := rand.NewSource(time.Now().UnixNano())
+// 	r := rand.New(ns)
+// 	serviceName := fmt.Sprintf("s-test-%d", r.Intn(10))
+// 	serviceInfo := discovery.ServiceInfo{IP: "127.0.0.1"}
+
+// 	s, err := discovery.NewService(serviceName, serviceInfo, []string{
+// 		"http://127.0.0.1:2379",
+// 		"http://127.0.0.1:22379",
+// 		"http://127.0.0.1:32379",
+// 	})
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	fmt.Printf("name:%s, ip:%s\n", s.Name, s.Info.IP)
+
+// 	if err = s.Start(); err != nil {
+// 		s.Stop(err)
+// 	}
+
+// 	// --------------- etcd v3 end here -------------
+
+// }
+
+// func etcdMain() {
+// 	wg := new(WaitGroupWrapper)
+// 	wg.Wrap(etcdMaster)
+
+// 	// service
+// 	wg.Wrap(etcdService)
+// 	wg.Wrap(etcdService)
+// 	wg.Wrap(etcdService)
+
+// 	wg.Wait()
+// }
+
+// type WaitGroupWrapper struct {
+// 	sync.WaitGroup
+// }
+
+// func (w *WaitGroupWrapper) Wrap(cb func()) {
+// 	w.Add(1)
+// 	go func() {
+// 		cb()
+// 		w.Done()
+// 	}()
+// }

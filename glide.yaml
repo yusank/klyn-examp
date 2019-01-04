@@ -9,4 +9,8 @@ import:
   version: master
   vcs: git  
 - package: go.etcd.io/etcd/client
+  vcs: git
   version: master
+- package: go.etcd.io/etcd/clientv3
+  vcs: git
+  version: master  
