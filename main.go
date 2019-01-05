@@ -77,6 +77,7 @@ func setMemory() {
 	defer file.Close()
 
 	var s []string
+
 	n := time.Now().Unix()
 	for {
 		s = append(s, "nice", "good")
