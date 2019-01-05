@@ -2,6 +2,11 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"runtime/pprof"
+	"syscall"
+	"time"
 
 	"git.yusank.space/yusank/klyn"
 	"git.yusank.space/yusank/klyn-log"
@@ -33,12 +38,60 @@ func main() {
 	group := core.Group("/klyn")
 	router(group)
 
+	go monitorOSSignal()
+
+	go setMemory()
+
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
 		Prefix:    "klyn-examp",
 		IsDebug:   true,
 		FlushMode: klynlog.FlushModeBySize,
 	})
 	core.Service(":8081")
+}
+
+func monitorOSSignal() {
+	c := make(chan os.Signal)
+	signal.Notify(c, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL,
+		syscall.SIGUSR1, syscall.SIGUSR2)
+
+	for {
+		// 如捕捉到监听的信号，将内存中的日志写入文件
+		s := <-c
+		log.Println("main catch signal:", s.String())
+		switch s {
+		// 如果为退出信号 则安全退出
+		case syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT:
+			os.Exit(0)
+		// 可以通过给进程发送 syscall.SIGUSR1, syscall.SIGUSR2 信号来，强制将缓存中的日志写入文件
+		default:
+		}
+	}
+}
+
+func setMemory() {
+	file, err := os.Create("mem.prof")
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	var s []string
+	n := time.Now().Unix()
+	for {
+		s = append(s, "nice", "good")
+
+		l := len(s)
+		if l%500000 == 0 {
+			log.Println(l)
+		}
+
+		if time.Now().Unix() > n {
+			if err = pprof.WriteHeapProfile(file); err != nil {
+				log.Println("write heap profile err:", err.Error())
+			}
+		}
+	}
 }
 
 // func etcdMaster() {
