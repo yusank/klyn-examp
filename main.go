@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"git.yusank.cn/yusank/klyn-log"
 	"git.yusank.space/yusank/klyn"
-	"git.yusank.space/yusank/klyn-log"
 )
 
 // Logger - global logger
