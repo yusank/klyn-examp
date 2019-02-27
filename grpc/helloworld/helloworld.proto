@@ -1,8 +1,4 @@
 syntax = "proto3";
-
-option java_multiple_files = true;
-option java_outer_classname = "HelloWorldProto";
-
 package helloworld;
 
 // hello request
@@ -17,5 +13,7 @@ message HelloResponse {
 
 // greeting service definition
 service Greeter {
+    // Send a greating
     rpc SayHello(HelloRequest) returns (HelloResponse) {}
+    rpc SayAgain (HelloRequest) returns (HelloResponse) {}
 }

@@ -1,22 +1,30 @@
 package main
 
 import (
+	"crypto/tls"
+	"fmt"
 	"log"
+	"math/rand"
+	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"runtime/pprof"
+	"sync"
 	"syscall"
 	"time"
 
 	"git.yusank.cn/yusank/klyn-log"
 	"git.yusank.space/yusank/klyn"
+	"git.yusank.space/yusank/klyn-examp/discovery"
 )
 
 // Logger - global logger
 var Logger klynlog.Logger
 
 func main() {
-	log.SetFlags(log.LstdFlags)
+	// log.Println(0%2, 1%2, 2%2, 3%2, -1%2)
+	// log.SetFlags(log.LstdFlags)
 	// etcdMain()
 
 	// go func() {
@@ -38,9 +46,12 @@ func main() {
 	group := core.Group("/klyn")
 	router(group)
 
-	go monitorOSSignal()
+	// go monitorOSSignal()
 
-	go setMemory()
+	go func() {
+		time.Sleep(time.Second * 2)
+		httpClientDO()
+	}()
 
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
 		Prefix:    "klyn-examp",
@@ -95,74 +106,114 @@ func setMemory() {
 	}
 }
 
-// func etcdMaster() {
-// 	m, err := discovery.NewMaster([]string{
-// 		"http://127.0.0.1:2379",
-// 		"http://127.0.0.1:22379",
-// 		"http://127.0.0.1:32379",
-// 	}, "services/")
+func etcdMaster() {
+	ns := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(ns)
+	watcherName := fmt.Sprintf("m-test-%d", r.Intn(10))
 
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	m, err := discovery.NewMaster([]string{
+		"http://127.0.0.1:2379",
+		"http://127.0.0.1:22379",
+		"http://127.0.0.1:32379",
+	}, "services/", watcherName)
 
-// 	for {
-// 		for k, v := range m.Nodes {
-// 			fmt.Printf("node:%s, ip=%s\n", k, v.Info.IP)
-// 		}
-// 		fmt.Printf("nodes num = %d\n", len(m.Nodes))
-// 		time.Sleep(time.Second * 5)
-// 	}
-// }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// func etcdService() {
-// 	// etcd-v3
+	for {
+		for k, v := range m.Nodes {
+			fmt.Printf("[%s]node:%s, ip=%s\n", watcherName, k, v.Info.IP)
+		}
+		time.Sleep(time.Second * 10)
+	}
+}
 
-// 	ns := rand.NewSource(time.Now().UnixNano())
-// 	r := rand.New(ns)
-// 	serviceName := fmt.Sprintf("s-test-%d", r.Intn(10))
-// 	serviceInfo := discovery.ServiceInfo{IP: "127.0.0.1"}
+func etcdService() {
+	// etcd-v3
+	ns := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(ns)
+	serverName := fmt.Sprintf("s-%d", r.Intn(10))
 
-// 	s, err := discovery.NewService(serviceName, serviceInfo, []string{
-// 		"http://127.0.0.1:2379",
-// 		"http://127.0.0.1:22379",
-// 		"http://127.0.0.1:32379",
-// 	})
+	serviceInfo := discovery.ServiceInfo{IP: "127.0.0.1"}
 
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+	s, err := discovery.NewService(serverName, serviceInfo, []string{
+		"http://127.0.0.1:2379",
+		"http://127.0.0.1:22379",
+		"http://127.0.0.1:32379",
+	})
 
-// 	fmt.Printf("name:%s, ip:%s\n", s.Name, s.Info.IP)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-// 	if err = s.Start(); err != nil {
-// 		s.Stop(err)
-// 	}
+	fmt.Printf("name:%s, ip:%s\n", s.Name, s.Info.IP)
 
-// 	// --------------- etcd v3 end here -------------
+	if err = s.Start(); err != nil {
+		s.Stop(err)
+	}
 
-// }
+	// --------------- etcd v3 end here -------------
 
-// func etcdMain() {
-// 	wg := new(WaitGroupWrapper)
-// 	wg.Wrap(etcdMaster)
+}
 
-// 	// service
-// 	wg.Wrap(etcdService)
-// 	wg.Wrap(etcdService)
-// 	wg.Wrap(etcdService)
+func etcdMain() {
+	wg := new(WaitGroupWrapper)
 
-// 	wg.Wait()
-// }
+	// watcher
+	// 监听目录的服务
+	wg.Wrap(etcdMaster)
+	wg.Wrap(etcdMaster)
 
-// type WaitGroupWrapper struct {
-// 	sync.WaitGroup
-// }
+	// service
+	// 对目录进行操作的服务
+	wg.Wrap(etcdService)
+	wg.Wrap(etcdService)
 
-// func (w *WaitGroupWrapper) Wrap(cb func()) {
-// 	w.Add(1)
-// 	go func() {
-// 		cb()
-// 		w.Done()
-// 	}()
-// }
+	wg.Wait()
+}
+
+type WaitGroupWrapper struct {
+	sync.WaitGroup
+}
+
+func (w *WaitGroupWrapper) Wrap(cb func()) {
+	w.Add(1)
+	go func() {
+		cb()
+		w.Done()
+	}()
+}
+
+func httpClientDO() {
+	u := "https://tnwz2-wx.hortorgames.com/hortorwall/done"
+
+	tr := &http.Transport{
+		MaxIdleConns:    10,
+		IdleConnTimeout: time.Second * 10,
+		TLSNextProto:    make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
+	}
+
+	var httpProxy, err = url.Parse("http://127.0.0.1:8888")
+	if err != nil {
+		panic(err)
+	}
+	tr.Proxy = http.ProxyURL(httpProxy)
+
+	cli := http.Client{Transport: tr}
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println(req.Proto)
+
+	resp, err := cli.Do(req)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println(resp.Proto)
+}
