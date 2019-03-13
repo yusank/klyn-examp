@@ -1,12 +1,9 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
 	"math/rand"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"runtime/pprof"
@@ -14,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	"git.yusank.cn/yusank/klyn"
+	"git.yusank.cn/yusank/klyn-examp/discovery"
 	"git.yusank.cn/yusank/klyn-log"
-	"git.yusank.space/yusank/klyn"
-	"git.yusank.space/yusank/klyn-examp/discovery"
 )
 
 // Logger - global logger
@@ -50,7 +47,6 @@ func main() {
 
 	go func() {
 		time.Sleep(time.Second * 2)
-		httpClientDO()
 	}()
 
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
@@ -66,18 +62,6 @@ func monitorOSSignal() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL,
 		syscall.SIGUSR1, syscall.SIGUSR2)
 
-	for {
-		// 如捕捉到监听的信号，将内存中的日志写入文件
-		s := <-c
-		log.Println("main catch signal:", s.String())
-		switch s {
-		// 如果为退出信号 则安全退出
-		case syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT:
-			os.Exit(0)
-		// 可以通过给进程发送 syscall.SIGUSR1, syscall.SIGUSR2 信号来，强制将缓存中的日志写入文件
-		default:
-		}
-	}
 }
 
 func setMemory() {
@@ -183,37 +167,4 @@ func (w *WaitGroupWrapper) Wrap(cb func()) {
 		cb()
 		w.Done()
 	}()
-}
-
-func httpClientDO() {
-	u := "https://tnwz2-wx.hortorgames.com/hortorwall/done"
-
-	tr := &http.Transport{
-		MaxIdleConns:    10,
-		IdleConnTimeout: time.Second * 10,
-		TLSNextProto:    make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
-	}
-
-	var httpProxy, err = url.Parse("http://127.0.0.1:8888")
-	if err != nil {
-		panic(err)
-	}
-	tr.Proxy = http.ProxyURL(httpProxy)
-
-	cli := http.Client{Transport: tr}
-	req, err := http.NewRequest("GET", u, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	log.Println(req.Proto)
-
-	resp, err := cli.Do(req)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	log.Println(resp.Proto)
 }
