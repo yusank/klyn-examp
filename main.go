@@ -11,9 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"git.yusank.cn/yusank/klyn"
-	"git.yusank.cn/yusank/klyn-examp/discovery"
-	"git.yusank.cn/yusank/klyn-log"
+	"github.com/yusank/klyn"
+	"github.com/yusank/klyn-examp/discovery"
+	klynlog "github.com/yusank/klyn-log"
+	klconsts "github.com/yusank/klyn-log/consts"
 )
 
 // Logger - global logger
@@ -52,7 +53,7 @@ func main() {
 	Logger = klynlog.NewLogger(&klynlog.LoggerConfig{
 		Prefix:    "klyn-examp",
 		IsDebug:   true,
-		FlushMode: klynlog.FlushModeBySize,
+		FlushMode: klconsts.FlushModeBySize,
 	})
 	core.Service(":8081")
 }

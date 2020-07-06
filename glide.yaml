@@ -1,8 +1,8 @@
-package: git.yusank.space/yusank/klyn-examp
+package: github.com/yusank/klyn-examp
 import:
-- package: git.yusank.cn/yusank/klyn
+- package: github.com/yusank/klyn
   version: dev
   vcs: git
-- package: git.yusank.cn/yusank/klyn-log
+- package: github.com/yusank/klyn-log
   version: master
   vcs: git

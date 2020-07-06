@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"git.yusank.cn/yusank/klyn"
+	"github.com/yusank/klyn"
 )
 
 func middleBefore(c *klyn.Context) {

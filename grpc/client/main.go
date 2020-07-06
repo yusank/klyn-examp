@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	hwpb "git.yusank.space/yusank/klyn-examp/grpc/helloworld"
+	hwpb "github.com/yusank/klyn-examp/grpc/helloworld"
 	"google.golang.org/grpc"
 )
 

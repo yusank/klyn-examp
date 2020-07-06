@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"git.yusank.cn/yusank/klyn"
+	"github.com/yusank/klyn"
 )
 
 func router(r *klyn.RouterGroup) {
